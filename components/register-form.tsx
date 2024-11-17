@@ -1,11 +1,12 @@
 "use client";
 
+import { Register } from "@/app/actions/register";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "./ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "./ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { Input } from "./ui/input";
 
 const formSchema = z.object({
@@ -18,6 +19,8 @@ const formSchema = z.object({
 });
 
 export function RegisterForm() {
+  const [isRegistering, setIsRegistering] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
       email: "",
@@ -27,7 +30,18 @@ export function RegisterForm() {
     resolver: zodResolver(formSchema),
   });
 
-  const handleSubmit = useCallback((formData: z.infer<typeof formSchema>) => {}, []);
+  const handleSubmit = useCallback(async (formData: z.infer<typeof formSchema>) => {
+    setIsRegistering(true);
+    const { error } = await Register(formData.email, formData.password);
+    setIsRegistering(false);
+
+    if (error) {
+      alert(error); //TODO: Add toast
+      return;
+    }
+
+    alert("Registered successfully"); //TODO: Add toast
+  }, []);
 
   return (
     <Form {...form}>
@@ -43,7 +57,7 @@ export function RegisterForm() {
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input placeholder="Email" {...field}></Input>
-              </FormControl>
+              </FormControl>{" "}
             </FormItem>
           )}
         />
@@ -75,7 +89,7 @@ export function RegisterForm() {
         />
 
         <Button className="flex w-full justify-center" type="submit">
-          Submit
+          Register
         </Button>
       </form>
     </Form>
